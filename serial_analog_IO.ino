@@ -1,3 +1,20 @@
+// A program to use arduino as analog input/output device through a simple serial interface.
+// Probably someone else already wrote something better, but I didn't find it.
+// Makes a nice quick, cheap, crappy data acquisition board
+
+// I'm using a library called CmdMessenger which seems to be standard for sending commands over serial
+// The command syntax is "commandnum, arg1, arg2, arg3;"
+// i.e. to set a voltage on pin 10 you could send "0, 10, 128;"
+
+// The reply also follows this syntax, unfortunately, so you need to parse out the number.
+// Leaves room to expand the script to do something more advanced later.
+
+// Notice all voltage levels are represented by the digital level
+// Also note that the "analog outputs" actually generate PWM signals, at quite low frequency, so filter them if necessary.
+
+// Author: Tyler Hennen
+// 2017-07-23
+
 #include <CmdMessenger.h>
 
 int analogWriteValue;
@@ -13,7 +30,7 @@ enum
 {
   AO                   , // Command to set analog out
   AI                   , // Command to read analog input
-  kStatus              , // Command to report status
+  Reply                , // Command to report status
 };
 
 // Callbacks define on which received commands we take action
@@ -31,10 +48,12 @@ void AnalogOutput()
   analogWriteChannel = cmdMessenger.readInt16Arg();
   analogWriteValue = cmdMessenger.readInt16Arg();
   analogWrite(analogWriteChannel, analogWriteValue);
-  cmdMessenger.sendCmdStart(kStatus);
-  cmdMessenger.sendCmdArg("Wrote some voltage to analog out");
-  cmdMessenger.sendCmdArg(analogWriteValue);
-  cmdMessenger.sendCmdEnd();
+  
+  // Don't bother replying to this.  Who wants to read that anyway?
+  //cmdMessenger.sendCmdStart(Reply);
+  //cmdMessenger.sendCmdArg("Wrote some voltage to analog out");
+  //cmdMessenger.sendCmdArg(analogWriteValue);
+  //cmdMessenger.sendCmdEnd();
 }
 
 // Callback function that reads the analog input
@@ -43,8 +62,7 @@ void AnalogInput()
   analogReadChannel = cmdMessenger.readInt16Arg();
   analogReadValue = analogRead(analogReadChannel);
   
-  cmdMessenger.sendCmdStart(kStatus);
-  cmdMessenger.sendCmdArg("Measured analog voltage");
+  cmdMessenger.sendCmdStart(Reply);
   cmdMessenger.sendCmdArg(analogReadValue);
   cmdMessenger.sendCmdEnd();
 }
@@ -52,7 +70,7 @@ void AnalogInput()
 // Called when a received command has no attached function
 void OnUnknownCommand()
 {
-  cmdMessenger.sendCmd(kStatus,"Command without attached callback");
+  cmdMessenger.sendCmd(Reply,"Command without attached callback");
 }
 
 // Setup function
