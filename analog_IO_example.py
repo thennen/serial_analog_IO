@@ -3,7 +3,7 @@ A short python example how to use my serial_analog_IO arduino program.
 
 Arduino is using some library called CmdMessenger to handle serial commands.
 I think it's a little too complex for this application, but it's the newest
-hippest library so whatever.
+hippest library, so whatever.
 
 There's a corresponding python library called pyCmdMessenger that is supposed
 to take care of this, but it was not working properly when I tried it.  Who
@@ -23,6 +23,7 @@ import serial
 s = serial.Serial(port='COM8', baudrate=9600)
 
 def analogOut(channel, voltage):
+    ''' Tell arduino to output a voltage on specified pin '''
     # Arduino will take the set voltage in bits.
     vmax = 5.
     numbits = 8
@@ -36,6 +37,8 @@ def analogOut(channel, voltage):
 
 
 def analogIn(channel):
+    ''' Tell arduino to sample a voltage on specified pin '''
+    # Arduino will return the voltage in bits
     vmax = 5
     numbits = 10
     vstep = vmax / (2**numbits - 1)
